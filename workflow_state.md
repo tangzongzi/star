@@ -10,10 +10,10 @@
 *保存工作流的当前状态。*
 
 ```yaml
-Phase: CONSTRUCT # 当前工作流阶段 (ANALYZE, BLUEPRINT, CONSTRUCT, VALIDATE, BLUEPRINT_REVISE)
-Status: IN_PROGRESS # 当前状态 (READY, IN_PROGRESS, BLOCKED_*, NEEDS_*, COMPLETED)
-CurrentTaskID: implement_project # 正在处理的主要任务标识符
-CurrentStep: core_functionality # 正在执行的计划中特定步骤的标识符
+Phase: BLUEPRINT # 当前工作流阶段 (ANALYZE, BLUEPRINT, CONSTRUCT, VALIDATE, BLUEPRINT_REVISE)
+Status: NEEDS_PLAN_APPROVAL # 当前状态 (READY, IN_PROGRESS, BLOCKED_*, NEEDS_*, COMPLETED)
+CurrentTaskID: implement_vue_project # 正在处理的主要任务标识符
+CurrentStep: initial_planning # 正在执行的计划中特定步骤的标识符
 ```
 
 ---
@@ -22,39 +22,41 @@ CurrentStep: core_functionality # 正在执行的计划中特定步骤的标识�
 
 *包含在BLUEPRINT阶段生成的逐步实施计划。*
 
-### 儿童奖励系统实施计划
+### 儿童奖励系统实施计划 (Vue3 + Tailwind CSS + Three.js)
 
 #### 1. 项目基础设置
-- [x] 规划项目需求和架构（已完成）
-- [x] 创建Next.js项目（已完成）
-- [x] 配置TailwindCSS（已完成）
-- [x] 设置FaunaDB集成（已完成）
-- [x] 配置Netlify部署（已完成）
+- [ ] 创建Vue3 + Vite项目
+- [ ] 配置TailwindCSS
+- [ ] 安装并集成Three.js
+- [ ] 设置基本项目结构
+- [ ] 配置Netlify部署准备
 
 #### 2. 基础架构实现
-- [x] 创建项目目录结构（已完成）
-- [x] 设置路由系统（已完成）
-- [x] 实现基础UI组件（已完成）
-- [x] 建立认证系统（已完成）
-- [x] 创建数据模型和FaunaDB集合（已完成）
+- [ ] 创建项目目录结构
+- [ ] 设置Vue Router
+- [ ] 实现基础UI组件
+- [ ] 创建状态管理方案
+- [ ] 设计数据模型
 
 #### 3. 核心功能实现
-- [x] 用户管理（注册、登录）（已完成）
-- [ ] 任务管理（创建、更新、删除任务）
+- [ ] 模式切换（家长/孩子）
+- [ ] 任务管理（创建、更新、完成任务）
 - [ ] 积分系统（获取、使用积分）
 - [ ] 奖励系统（创建、兑换奖励）
 
-#### 4. UI开发
-- [x] 实现响应式布局（已完成）
-- [x] 创建家长端界面（已完成）
-- [x] 创建孩子端界面（已完成）
-- [ ] 实现基础动画和交互
+#### 4. 3D展示功能
+- [ ] 设置Three.js基础场景
+- [ ] 创建奖励展示组件
+- [ ] 实现简单动画效果
+- [ ] 优化3D渲染性能
 
-#### 5. 测试和优化
-- [ ] 功能测试
-- [ ] 响应式设计测试
-- [ ] 性能优化
-- [ ] 解决问题和bug修复
+#### 5. 数据持久化
+- [ ] 实现LocalStorage数据存储
+- [ ] 创建数据模型和CRUD操作
+- [ ] 添加数据导入/导出功能
+
+#### 6. UI开发
+- [ ]
 
 ---
 
