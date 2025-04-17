@@ -1,10 +1,11 @@
+@import './variables.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-800;
+    @apply bg-background text-foreground;
     font-family: 'Inter', 'Helvetica', 'Arial', sans-serif;
   }
   
@@ -31,19 +32,29 @@
   }
   
   .btn-primary {
-    @apply bg-primary text-white hover:bg-primary-dark focus:ring-primary/50 shadow-primary/20;
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors
+    bg-primary text-primary-foreground hover:bg-primary/90 
+    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring;
   }
   
   .btn-secondary {
-    @apply bg-secondary text-white hover:bg-secondary-dark focus:ring-secondary/50 shadow-secondary/20;
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors
+    bg-secondary text-secondary-foreground hover:bg-secondary/80
+    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring;
   }
   
   .btn-accent {
     @apply bg-accent text-white hover:bg-accent-dark focus:ring-accent/50 shadow-accent/20;
   }
   
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-lg border border-input px-4 py-2 text-sm font-medium
+    bg-background hover:bg-accent hover:text-accent-foreground
+    focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring;
+  }
+  
   .card {
-    @apply bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300;
+    @apply rounded-lg border bg-card text-card-foreground shadow;
   }
   
   .task-card {
@@ -105,4 +116,79 @@
   .empty-state {
     @apply text-center py-10 text-gray-500 bg-gray-50/50 rounded-lg border border-dashed border-gray-200;
   }
+  
+  .input {
+    @apply flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm
+    transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium
+    placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1
+    focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  
+  .badge {
+    @apply inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold
+    transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+  
+  .card-header {
+    @apply flex flex-col space-y-1.5 p-6;
+  }
+  
+  .card-content {
+    @apply p-6 pt-0;
+  }
+  
+  .card-footer {
+    @apply flex items-center p-6 pt-0;
+  }
+}
+
+/* 动画效果 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
 } 
