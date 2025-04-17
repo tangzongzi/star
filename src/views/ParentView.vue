@@ -1,21 +1,33 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-background to-secondary">
+  <div class="min-h-screen bg-[#FAFBFF]">
     <!-- 顶部导航栏 -->
-    <header class="glass fixed top-0 w-full z-50 px-4 py-3">
-      <div class="container mx-auto flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent animate-gradient">
-            星星任务
-          </h1>
-          <span class="clay px-3 py-1 text-sm">
-            积分: {{ points }}
-          </span>
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#E5E9F2]">
+      <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-8">
+          <router-link to="/parent" class="flex items-center">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center mr-3">
+              <span class="text-white text-lg font-bold">星</span>
+            </div>
+            <span class="text-lg font-semibold text-gray-900">星星任务</span>
+          </router-link>
+          <div class="hidden md:flex items-center space-x-1">
+            <div class="flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100/50">
+              <svg class="w-5 h-5 text-amber-500 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+              </svg>
+              <span class="text-amber-700 font-medium">{{ points }} 积分</span>
+            </div>
+          </div>
         </div>
         <nav class="flex items-center space-x-4">
           <router-link 
             to="/parent/rewards" 
-            class="clay hover:clay-pressed transition-all px-4 py-2 text-foreground"
+            class="flex items-center px-4 py-2 rounded-lg text-sm font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors"
           >
+            <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 15.0006L8.46447 18.5361L7.05025 17.1219L12 12.1721L16.9497 17.1219L15.5355 18.5361L12 15.0006Z" fill="currentColor"/>
+              <path d="M12 8.82847L8.46447 12.364L7.05025 10.9498L12 6.00001L16.9497 10.9498L15.5355 12.364L12 8.82847Z" fill="currentColor"/>
+            </svg>
             奖励管理
           </router-link>
         </nav>
@@ -23,106 +35,219 @@
     </header>
 
     <!-- 主要内容区域 -->
-    <main class="container mx-auto pt-24 px-4">
-      <!-- 欢迎卡片 -->
-      <div class="glass p-6 rounded-lg mb-8 animate-float">
-        <h2 class="text-xl font-semibold mb-2">欢迎，家长</h2>
-        <p class="text-muted-foreground">
-          通过给孩子设置任务和奖励，培养孩子的责任感和自律能力。已完成的任务会给予星星奖励，
-          孩子可以用这些星星兑换奖励。
-        </p>
-      </div>
-
-      <!-- 任务状态统计 -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div v-for="(count, status) in taskCounts" :key="status" 
-             class="clay p-4 rounded-lg text-center">
-          <h3 class="text-lg font-medium mb-2">{{ status }}</h3>
-          <p class="text-2xl font-bold text-primary animate-glow">{{ count }}</p>
+    <main class="container mx-auto px-4 pt-24 pb-12">
+      <!-- 欢迎区域 -->
+      <section class="mb-10">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-8 md:p-12">
+          <div class="relative z-10">
+            <h1 class="text-2xl md:text-3xl font-bold text-white mb-4">
+              欢迎回来，家长 👋
+            </h1>
+            <p class="text-indigo-100 text-base md:text-lg max-w-2xl">
+              通过给孩子设置任务和奖励，培养孩子的责任感和自律能力。完成任务可以获得星星奖励，用于兑换奖励。
+            </p>
+          </div>
+          <!-- 装饰性背景元素 -->
+          <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/10 to-transparent rounded-full transform translate-x-1/3 -translate-y-1/3"></div>
+          <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-white/10 to-transparent rounded-full transform -translate-x-1/3 translate-y-1/3"></div>
         </div>
-      </div>
+      </section>
 
-      <!-- 任务列表 -->
-      <div class="space-y-6">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold">全部任务</h2>
-          <button 
-            @click="showAddTask = true"
-            class="clay hover:clay-pressed transition-all px-4 py-2 text-primary-foreground bg-primary rounded-lg"
-          >
-            添加新任务
-          </button>
-        </div>
-
-        <!-- 任务卡片列表 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="task in tasks" :key="task.id" 
-               class="glass hover:shadow-glow transition-all p-4 rounded-lg">
-            <div class="flex justify-between items-start mb-3">
-              <h3 class="font-medium">{{ task.title }}</h3>
-              <span class="clay px-2 py-1 text-sm">{{ task.points }} 星</span>
-            </div>
-            <p class="text-sm text-muted-foreground mb-4">{{ task.description }}</p>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-muted-foreground">{{ task.deadline }}</span>
-              <button 
-                @click="deleteTask(task.id)"
-                class="clay hover:clay-pressed transition-all px-3 py-1 text-sm text-destructive"
-              >
-                删除
-              </button>
+      <!-- 状态统计区域 -->
+      <section class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10">
+        <div class="bg-white rounded-xl border border-gray-100 p-6 hover:border-indigo-100 transition-colors">
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-gray-500 mb-3">待完成任务</span>
+            <div class="flex items-baseline space-x-2">
+              <span class="text-2xl md:text-3xl font-bold text-indigo-600">{{ pendingCount }}</span>
+              <span class="text-sm text-gray-400">个</span>
             </div>
           </div>
         </div>
-      </div>
+        <div class="bg-white rounded-xl border border-gray-100 p-6 hover:border-purple-100 transition-colors">
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-gray-500 mb-3">待审核任务</span>
+            <div class="flex items-baseline space-x-2">
+              <span class="text-2xl md:text-3xl font-bold text-purple-600">{{ reviewCount }}</span>
+              <span class="text-sm text-gray-400">个</span>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-100 p-6 hover:border-green-100 transition-colors">
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-gray-500 mb-3">已完成任务</span>
+            <div class="flex items-baseline space-x-2">
+              <span class="text-2xl md:text-3xl font-bold text-green-600">{{ completedCount }}</span>
+              <span class="text-sm text-gray-400">个</span>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-100 p-6 hover:border-red-100 transition-colors">
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-gray-500 mb-3">已过期任务</span>
+            <div class="flex items-baseline space-x-2">
+              <span class="text-2xl md:text-3xl font-bold text-red-600">{{ expiredCount }}</span>
+              <span class="text-sm text-gray-400">个</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 任务列表区域 -->
+      <section class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div class="p-6 md:p-8 border-b border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-bold text-gray-900">全部任务</h2>
+              <p class="text-sm text-gray-500 mt-1">管理和跟踪所有任务的进度</p>
+            </div>
+            <button 
+              @click="showAddTaskModal = true"
+              class="inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium text-sm hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4V20M20 12L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              添加任务
+            </button>
+          </div>
+        </div>
+
+        <!-- 任务卡片列表 -->
+        <div class="p-6 md:p-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div 
+              v-for="task in tasks" 
+              :key="task.id" 
+              class="group relative bg-white rounded-xl border border-gray-100 p-6 hover:border-indigo-100 hover:shadow-sm transition-all duration-200"
+            >
+              <div class="flex flex-col h-full">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                      {{ task.title }}
+                    </h3>
+                    <p class="text-sm text-gray-500 line-clamp-2">{{ task.description }}</p>
+                  </div>
+                  <div class="flex items-center justify-center w-10 h-10 rounded-full bg-amber-50 ml-4">
+                    <span class="text-amber-600 font-semibold text-sm">{{ task.points }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
+                  <span 
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" 
+                    :class="getStatusClass(task.status)"
+                  >
+                    {{ getStatusText(task.status) }}
+                  </span>
+                  <button 
+                    @click="deleteTask(task.id)"
+                    class="text-sm text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    删除
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 空状态 -->
+          <div 
+            v-if="!tasks.length" 
+            class="flex flex-col items-center justify-center py-12 px-4"
+          >
+            <div class="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
+              <svg class="w-8 h-8 text-indigo-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 12H15M12 9V15M12 3C19.2 3 21 4.8 21 12C21 19.2 19.2 21 12 21C4.8 21 3 19.2 3 12C3 4.8 4.8 3 12 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-1">还没有任务</h3>
+            <p class="text-sm text-gray-500 text-center max-w-sm">
+              点击"添加任务"按钮开始创建新的任务吧！
+            </p>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <!-- 添加任务模态框 -->
+    <AddTaskModal v-if="showAddTaskModal" @close="showAddTaskModal = false" @add="addTask" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useAppStore } from '../stores/app'
-import { useTasksStore } from '../stores/tasks'
+import { useAppStore } from '@/stores/app'
+import AddTaskModal from '@/components/AddTaskModal.vue'
 
 const appStore = useAppStore()
-const tasksStore = useTasksStore()
+const showAddTaskModal = ref(false)
 
+// 模拟数据
+const tasks = ref([
+  {
+    id: 1,
+    title: '整理房间',
+    description: '把床铺好，收拾玩具和书本',
+    points: 5,
+    status: 'pending'
+  },
+  {
+    id: 2,
+    title: '完成家庭作业',
+    description: '认真完成今天的全部家庭作业',
+    points: 10,
+    status: 'review'
+  },
+  {
+    id: 3,
+    title: '阅读30分钟',
+    description: '阅读一本有益的书籍30分钟',
+    points: 8,
+    status: 'completed'
+  }
+])
+
+// 计算属性
 const points = computed(() => appStore.points)
-const tasks = computed(() => tasksStore.tasks)
-const showAddTask = ref(false)
+const pendingCount = computed(() => tasks.value.filter(t => t.status === 'pending').length)
+const reviewCount = computed(() => tasks.value.filter(t => t.status === 'review').length)
+const completedCount = computed(() => tasks.value.filter(t => t.status === 'completed').length)
+const expiredCount = computed(() => tasks.value.filter(t => t.status === 'expired').length)
 
-const taskCounts = computed(() => ({
-  '待完成': tasks.value.filter(t => !t.completed && !t.expired).length,
-  '待审核': tasks.value.filter(t => t.completed && !t.approved).length,
-  '已完成': tasks.value.filter(t => t.completed && t.approved).length,
-  '已过期': tasks.value.filter(t => t.expired).length,
-}))
+// 方法
+const getStatusClass = (status) => {
+  const classes = {
+    pending: 'bg-indigo-50 text-indigo-600',
+    review: 'bg-purple-50 text-purple-600',
+    completed: 'bg-green-50 text-green-600',
+    expired: 'bg-red-50 text-red-600'
+  }
+  return classes[status]
+}
+
+const getStatusText = (status) => {
+  const texts = {
+    pending: '待完成',
+    review: '待审核',
+    completed: '已完成',
+    expired: '已过期'
+  }
+  return texts[status]
+}
+
+const addTask = (task) => {
+  tasks.value.push({
+    id: Date.now(),
+    ...task,
+    status: 'pending'
+  })
+  showAddTaskModal.value = false
+}
 
 const deleteTask = (taskId) => {
-  tasksStore.deleteTask(taskId)
-  appStore.notify({
-    type: 'success',
-    message: '任务已删除'
-  })
+  if (confirm('确定要删除这个任务吗？')) {
+    tasks.value = tasks.value.filter(t => t.id !== taskId)
+  }
 }
-</script>
-
-<style scoped>
-.glass {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.125);
-}
-
-.clay {
-  background: var(--clay-background);
-  border-radius: 12px;
-  box-shadow: 8px 8px 16px var(--clay-shadow-dark),
-             -8px -8px 16px var(--clay-shadow-light);
-}
-
-.clay-pressed {
-  box-shadow: inset 8px 8px 16px var(--clay-shadow-dark),
-              inset -8px -8px 16px var(--clay-shadow-light);
-}
-</style> 
+</script> 

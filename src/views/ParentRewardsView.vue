@@ -1,355 +1,250 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- 顶部导航 -->
-    <header class="bg-white shadow-sm sticky top-0 z-10">
-      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-primary">
-          <span class="hidden sm:inline">奖励管理</span>
-          <span class="sm:hidden">奖励管理</span>
-        </h1>
-        <div class="flex items-center gap-4">
-          <!-- 显示当前积分 -->
-          <div class="flex items-center bg-amber-50 px-3 py-1.5 rounded-lg text-amber-700">
-            <svg class="w-5 h-5 mr-1 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-            </svg>
-            <span class="font-medium">{{ points }}</span>
+  <div class="min-h-screen bg-[#FAFBFF]">
+    <!-- 顶部导航栏 -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#E5E9F2]">
+      <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-8">
+          <router-link to="/parent" class="flex items-center">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center mr-3">
+              <span class="text-white text-lg font-bold">星</span>
+            </div>
+            <span class="text-lg font-semibold text-gray-900">星星任务</span>
+          </router-link>
+          <div class="hidden md:flex items-center space-x-1">
+            <div class="flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100/50">
+              <svg class="w-5 h-5 text-amber-500 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+              </svg>
+              <span class="text-amber-700 font-medium">{{ points }} 积分</span>
+            </div>
           </div>
-          
-          <!-- 返回按钮 -->
-          <button 
-            @click="router.push('/parent')"
-            class="btn-primary px-3 py-1.5 text-sm flex items-center"
-          >
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            <span class="hidden sm:inline">返回任务中心</span>
-            <span class="sm:hidden">返回</span>
-          </button>
         </div>
+        <nav class="flex items-center space-x-4">
+          <router-link 
+            to="/parent" 
+            class="flex items-center px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            返回任务
+          </router-link>
+        </nav>
       </div>
     </header>
 
-    <main class="container mx-auto px-4 py-6">
-      <!-- 奖励请求处理部分 -->
-      <div v-if="pendingRewardRequests.length > 0" class="mb-8">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-800">待处理的奖励请求</h2>
-        </div>
-        
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">奖励</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">消耗星星</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">请求时间</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="request in pendingRewardRequests" :key="request.id">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ request.title }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div class="flex items-center">
-                      <svg class="w-4 h-4 mr-1 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                      </svg>
-                      {{ request.points }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(request.createdAt) }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div class="flex space-x-2">
-                      <button 
-                        @click="approveRequest(request.id)"
-                        class="px-3 py-1 text-xs rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
-                      >
-                        批准
-                      </button>
-                      <button 
-                        @click="rejectRequest(request.id)"
-                        class="px-3 py-1 text-xs rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
-                      >
-                        拒绝
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+    <!-- 主要内容区域 -->
+    <main class="container mx-auto px-4 pt-24 pb-12">
+      <!-- 欢迎区域 -->
+      <section class="mb-10">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 p-8 md:p-12">
+          <div class="relative z-10">
+            <h1 class="text-2xl md:text-3xl font-bold text-white mb-4">
+              奖励管理 🎁
+            </h1>
+            <p class="text-amber-100 text-base md:text-lg max-w-2xl">
+              在这里创建和管理孩子可以兑换的奖励，合理设置奖励可以更好地激励孩子完成任务。
+            </p>
           </div>
+          <!-- 装饰性背景元素 -->
+          <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/10 to-transparent rounded-full transform translate-x-1/3 -translate-y-1/3"></div>
+          <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-white/10 to-transparent rounded-full transform -translate-x-1/3 translate-y-1/3"></div>
         </div>
-      </div>
-      
-      <!-- 奖励管理部分 -->
-      <div class="mb-8">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-800">奖励管理</h2>
-          <button 
-            @click="showAddRewardModal = true"
-            class="btn-primary px-4 py-2 text-sm flex items-center"
-          >
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            添加奖励
-          </button>
-        </div>
-        
-        <div v-if="allRewards.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div 
-            v-for="reward in allRewards" 
-            :key="reward.id"
-            class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all"
-            :class="{ 'opacity-60': reward.redeemed }"
-          >
-            <div class="bg-primary-light/10 px-4 py-3 border-b border-primary-light/20">
-              <div class="flex justify-between items-center">
-                <h3 class="font-medium truncate" :title="reward.title">
-                  {{ reward.title }}
-                  <span v-if="reward.redeemed" class="ml-2 text-xs text-gray-500">(已兑换)</span>
-                </h3>
-                <div class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs font-medium flex items-center">
-                  <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                  </svg>
-                  {{ reward.points }}
-                </div>
-              </div>
-            </div>
-            <div class="p-4">
-              <p class="text-sm text-gray-600 mb-4">{{ reward.description }}</p>
-              <div v-if="reward.category" class="mb-4">
-                <span class="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">
-                  {{ reward.category }}
-                </span>
-              </div>
-              <div class="flex justify-end space-x-2">
-                <button 
-                  v-if="reward.redeemed"
-                  @click="restoreReward(reward.id)"
-                  class="px-3 py-1.5 text-xs flex items-center rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
-                >
-                  <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                  </svg>
-                  恢复
-                </button>
-                <button 
-                  @click="deleteReward(reward.id)"
-                  class="px-3 py-1.5 text-xs flex items-center rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
-                >
-                  <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                  删除
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-else class="text-center py-12 bg-white rounded-xl shadow-sm">
-          <div class="mx-auto w-16 h-16 mb-4 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0 0l-4-4m4 4l4-4M4 19h16M4 7h16M4 13h16"></path>
-            </svg>
-          </div>
-          <h3 class="text-lg font-medium text-gray-700 mb-2">暂无奖励</h3>
-          <p class="text-gray-500 mb-4">点击上方"添加奖励"按钮来创建第一个奖励</p>
-        </div>
-      </div>
-    </main>
+      </section>
 
-    <!-- 添加奖励的模态框 -->
-    <div v-if="showAddRewardModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6 relative">
-        <button 
-          @click="showAddRewardModal = false"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-        
-        <h3 class="text-lg font-bold text-gray-900 mb-6">添加新奖励</h3>
-        
-        <form @submit.prevent="addNewReward">
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1" for="reward-title">
-              奖励名称
-            </label>
-            <input 
-              id="reward-title"
-              v-model="newReward.title"
-              type="text" 
-              class="block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary focus:ring focus:ring-primary/30 focus:outline-none"
-              placeholder="输入奖励名称"
-              required
-            />
+      <!-- 统计卡片区域 -->
+      <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <!-- 可用奖励 -->
+        <div class="bg-white rounded-2xl border border-gray-100 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center">
+              <svg class="w-6 h-6 text-green-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 11.5L12 2.5L3 11.5H6V19.5C6 20.0523 6.44772 20.5 7 20.5H17C17.5523 20.5 18 20.0523 18 19.5V11.5H21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="text-3xl font-bold text-gray-900">{{ availableRewards }}</span>
           </div>
-          
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1" for="reward-description">
-              奖励描述
-            </label>
-            <textarea 
-              id="reward-description"
-              v-model="newReward.description"
-              class="block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary focus:ring focus:ring-primary/30 focus:outline-none"
-              placeholder="输入奖励描述"
-              rows="3"
-              required
-            ></textarea>
+          <h3 class="text-sm font-medium text-gray-900">可用奖励</h3>
+          <p class="text-sm text-gray-500 mt-1">当前可以兑换的奖励数量</p>
+        </div>
+
+        <!-- 已兑换 -->
+        <div class="bg-white rounded-2xl border border-gray-100 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
+              <svg class="w-6 h-6 text-amber-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 12L11 14L15 10M12 3L14.39 5.42C15.3653 4.52494 16.6016 3.99771 17.89 3.93C19.1784 3.86229 20.4574 4.25894 21.47 5.05C22.4826 5.84106 23.1591 6.97875 23.3795 8.2439C23.5999 9.50905 23.3485 10.8071 22.67 11.89L24 14L21.27 15.33C20.9547 16.4019 20.4193 17.401 19.6977 18.2775C18.9761 19.154 18.0809 19.8941 17.0637 20.4597C16.0465 21.0254 14.9243 21.4064 13.7652 21.5832C12.6061 21.76 11.4297 21.7297 10.2835 21.494C9.13725 21.2583 8.04471 20.8217 7.06028 20.2064C6.07585 19.5911 5.21851 18.8077 4.52777 17.8966C3.83703 16.9854 3.32624 15.9621 3.01984 14.8756C2.71343 13.7892 2.61757 12.6578 2.74 11.54L0 10.19L1.36 8.09C0.682173 7.00717 0.431614 5.70941 0.652954 4.44458C0.874294 3.17975 1.55168 2.04237 2.56502 1.25155C3.57836 0.460733 4.85819 0.0642062 6.14733 0.131931C7.43647 0.199656 8.67348 0.726962 9.65 1.62L12 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="text-3xl font-bold text-gray-900">{{ redeemedCount }}</span>
           </div>
-          
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1" for="reward-category">
-              奖励类别
-            </label>
-            <select 
-              id="reward-category"
-              v-model="newReward.category"
-              class="block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary focus:ring focus:ring-primary/30 focus:outline-none"
-            >
-              <option value="">-- 选择类别 --</option>
-              <option value="特权奖励">特权奖励</option>
-              <option value="体验奖励">体验奖励</option>
-              <option value="物质奖励">物质奖励</option>
-              <option value="其他">其他</option>
-            </select>
+          <h3 class="text-sm font-medium text-gray-900">已兑换奖励</h3>
+          <p class="text-sm text-gray-500 mt-1">累计兑换的奖励次数</p>
+        </div>
+
+        <!-- 总星星消耗 -->
+        <div class="bg-white rounded-2xl border border-gray-100 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="text-3xl font-bold text-gray-900">{{ totalPointsSpent }}</span>
           </div>
-          
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-1" for="reward-points">
-              所需星星
-            </label>
-            <input 
-              id="reward-points"
-              v-model.number="newReward.points"
-              type="number" 
-              min="1"
-              class="block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary focus:ring focus:ring-primary/30 focus:outline-none"
-              placeholder="输入所需星星数量"
-              required
-            />
+          <h3 class="text-sm font-medium text-gray-900">总星星消耗</h3>
+          <p class="text-sm text-gray-500 mt-1">累计兑换消耗的星星数量</p>
+        </div>
+
+        <!-- 平均兑换价值 -->
+        <div class="bg-white rounded-2xl border border-gray-100 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 8V16M12 11V16M8 14V16M6 20H18C19.1046 20 20 19.1046 20 18V6C20 4.89543 19.1046 4 18 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="text-3xl font-bold text-gray-900">{{ averagePoints }}</span>
           </div>
-          
-          <div class="flex justify-end">
+          <h3 class="text-sm font-medium text-gray-900">平均兑换价值</h3>
+          <p class="text-sm text-gray-500 mt-1">每个奖励平均所需星星数</p>
+        </div>
+      </section>
+
+      <!-- 奖励列表区域 -->
+      <section class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div class="p-6 md:p-8 border-b border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-bold text-gray-900">全部奖励</h2>
+              <p class="text-sm text-gray-500 mt-1">管理可兑换的奖励项目</p>
+            </div>
             <button 
-              type="button"
-              @click="showAddRewardModal = false"
-              class="mr-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              @click="showAddRewardModal = true"
+              class="inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium text-sm hover:from-amber-600 hover:to-orange-600 transition-all duration-200 shadow-sm hover:shadow focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
             >
-              取消
-            </button>
-            <button 
-              type="submit"
-              class="btn-primary px-4 py-2"
-            >
+              <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4V20M20 12L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
               添加奖励
             </button>
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+
+        <!-- 奖励卡片列表 -->
+        <div class="p-6 md:p-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div 
+              v-for="reward in rewards" 
+              :key="reward.id" 
+              class="group relative bg-white rounded-xl border border-gray-100 p-6 hover:border-amber-100 hover:shadow-sm transition-all duration-200"
+            >
+              <div class="flex flex-col h-full">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2 group-hover:text-amber-600 transition-colors">
+                      {{ reward.title }}
+                    </h3>
+                    <p class="text-sm text-gray-500 line-clamp-2">{{ reward.description }}</p>
+                  </div>
+                  <div class="flex items-center justify-center w-10 h-10 rounded-full bg-amber-50 ml-4">
+                    <span class="text-amber-600 font-semibold text-sm">{{ reward.points }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
+                  <span 
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                    :class="reward.available ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-600'"
+                  >
+                    {{ reward.available ? '可兑换' : '已兑完' }}
+                  </span>
+                  <button 
+                    @click="deleteReward(reward.id)"
+                    class="text-sm text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    删除
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 空状态 -->
+          <div 
+            v-if="!rewards.length" 
+            class="flex flex-col items-center justify-center py-12 px-4"
+          >
+            <div class="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
+              <svg class="w-8 h-8 text-amber-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 12H15M12 9V15M12 3C19.2 3 21 4.8 21 12C21 19.2 19.2 21 12 21C4.8 21 3 19.2 3 12C3 4.8 4.8 3 12 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-1">还没有奖励</h3>
+            <p class="text-sm text-gray-500 text-center max-w-sm">
+              点击"添加奖励"按钮开始创建新的奖励吧！
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 添加奖励模态框 -->
+    <AddRewardModal v-if="showAddRewardModal" @close="showAddRewardModal = false" @add="addReward" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAppStore } from '@/stores/app';
-import { useRewardsStore } from '@/stores/rewards';
+import { ref, computed } from 'vue'
+import { useAppStore } from '@/stores/app'
+import AddRewardModal from '@/components/AddRewardModal.vue'
 
-const router = useRouter();
-const appStore = useAppStore();
-const rewardsStore = useRewardsStore();
+const appStore = useAppStore()
+const showAddRewardModal = ref(false)
 
-// 获取积分
-const points = computed(() => appStore.points);
+// 计算属性
+const points = computed(() => appStore.points)
+const availableRewards = computed(() => rewards.value.filter(r => r.available).length)
+const redeemedCount = computed(() => 15) // 模拟数据
+const totalPointsSpent = computed(() => 280) // 模拟数据
+const averagePoints = computed(() => Math.round(rewards.value.reduce((acc, cur) => acc + cur.points, 0) / rewards.value.length || 0))
 
-// 奖励相关
-const allRewards = computed(() => rewardsStore.allRewards);
-const pendingRewardRequests = computed(() => rewardsStore.pendingRewardRequests);
-
-// 用于添加奖励的状态
-const showAddRewardModal = ref(false);
-const newReward = ref({
-  title: '',
-  description: '',
-  category: '',
-  points: 10
-});
-
-// 添加新奖励
-const addNewReward = () => {
-  rewardsStore.addReward({
-    title: newReward.value.title,
-    description: newReward.value.description,
-    category: newReward.value.category,
-    points: newReward.value.points
-  });
-  
-  // 重置表单
-  newReward.value = {
-    title: '',
-    description: '',
-    category: '',
-    points: 10
-  };
-  
-  // 关闭模态框
-  showAddRewardModal.value = false;
-};
-
-// 批准奖励请求
-const approveRequest = (requestId) => {
-  if (rewardsStore.approveRewardRequest(requestId)) {
-    appStore.notify('奖励请求已批准', 'success');
-  } else {
-    appStore.notify('处理奖励请求时出错', 'error');
+// 模拟数据
+const rewards = ref([
+  {
+    id: 1,
+    title: '额外的游戏时间',
+    description: '可以获得30分钟的额外游戏时间',
+    points: 20,
+    available: true
+  },
+  {
+    id: 2,
+    title: '选择今天的晚餐',
+    description: '可以选择想吃的晚餐',
+    points: 30,
+    available: true
+  },
+  {
+    id: 3,
+    title: '新玩具',
+    description: '可以挑选一个喜欢的玩具',
+    points: 100,
+    available: false
   }
-};
+])
 
-// 拒绝奖励请求
-const rejectRequest = (requestId) => {
-  if (rewardsStore.rejectRewardRequest(requestId)) {
-    appStore.notify('奖励请求已拒绝，积分已退还', 'info');
-  } else {
-    appStore.notify('处理奖励请求时出错', 'error');
-  }
-};
+// 方法
+const addReward = (reward) => {
+  rewards.value.push({
+    id: Date.now(),
+    ...reward,
+    available: true
+  })
+  showAddRewardModal.value = false
+}
 
-// 删除奖励
 const deleteReward = (rewardId) => {
   if (confirm('确定要删除这个奖励吗？')) {
-    rewardsStore.deleteReward(rewardId);
+    rewards.value = rewards.value.filter(r => r.id !== rewardId)
   }
-};
-
-// 恢复已兑换的奖励
-const restoreReward = (rewardId) => {
-  rewardsStore.restoreReward(rewardId);
-};
-
-// 格式化日期
-const formatDate = (timestamp) => {
-  const date = new Date(timestamp);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-};
-
-// 加载数据
-onMounted(() => {
-  // 如果当前不是家长模式，则跳转到儿童页面
-  if (appStore.currentMode !== 'parent') {
-    router.push('/child');
-    return;
-  }
-});
+}
 </script>
 
 <style scoped>

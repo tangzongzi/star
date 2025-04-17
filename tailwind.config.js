@@ -1,12 +1,18 @@
 /** @type {import('tailwindcss').Config} */
-const plugin = require('tailwindcss/plugin')
-
 export default {
   content: [
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -15,12 +21,22 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
+          light: "hsl(var(--primary) / 0.9)",
           DEFAULT: "hsl(var(--primary))",
+          dark: "hsl(var(--primary) / 1.1)",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
+          light: "hsl(var(--secondary) / 0.9)",
           DEFAULT: "hsl(var(--secondary))",
+          dark: "hsl(var(--secondary) / 1.1)",
           foreground: "hsl(var(--secondary-foreground))",
+        },
+        accent: {
+          light: "hsl(var(--accent) / 0.9)",
+          DEFAULT: "hsl(var(--accent))",
+          dark: "hsl(var(--accent) / 1.1)",
+          foreground: "hsl(var(--accent-foreground))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -29,10 +45,6 @@ export default {
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -47,6 +59,8 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        'xl': '1rem',
+        '2xl': '1.5rem',
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -54,6 +68,7 @@ export default {
         "gradient": "gradient 8s linear infinite",
         "float": "float 6s ease-in-out infinite",
         "glow": "glow 2s ease-in-out infinite",
+        'twinkle': 'twinkle 1.5s ease-in-out infinite',
       },
       keyframes: {
         "accordion-down": {
@@ -74,15 +89,11 @@ export default {
             "background-position": "right center",
           },
         },
-        "float": {
-          "0%, 100%": {
-            transform: "translateY(0)",
-          },
-          "50%": {
-            transform: "translateY(-20px)",
-          },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-20px)' },
         },
-        "glow": {
+        glow: {
           "0%, 100%": {
             opacity: 1,
           },
@@ -90,11 +101,15 @@ export default {
             opacity: 0.5,
           },
         },
+        twinkle: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.3' },
+        }
       },
     },
   },
   plugins: [
-    plugin(({ addUtilities }) => {
+    function({ addUtilities }) {
       addUtilities({
         '.glass': {
           'background': 'rgba(255, 255, 255, 0.2)',
@@ -115,6 +130,12 @@ export default {
           'box-shadow': 'inset 8px 8px 16px var(--clay-shadow-dark), inset -8px -8px 16px var(--clay-shadow-light)',
         },
       })
-    }),
+      const newUtilities = {
+        '.backdrop-blur-2xl': {
+          'backdrop-filter': 'blur(40px)',
+        },
+      }
+      addUtilities(newUtilities)
+    },
   ],
 } 

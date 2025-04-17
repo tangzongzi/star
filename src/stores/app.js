@@ -1,153 +1,291 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { auth, tasks, rewards, points } from '../lib/supabase'
 
-export const useAppStore = defineStore('app', {
-  state: () => ({
-    // 用户信息
-    user: null,
-    userType: null, // 'parent' | 'child'
-    points: 0,
-    currentMode: null, // 'parent' | 'child'
+export const useAppStore = defineStore('app', () => {
+  const currentUser = ref(null)
+  const notifications = ref([])
+  const isLoading = ref(false)
+  const error = ref(null)
 
-    // 通知
-    notification: null,
-  }),
+  // 用户认证相关
+  const isAuthenticated = computed(() => !!currentUser.value)
+  const userRole = computed(() => currentUser.value?.user_metadata?.role || '')
+  const userPoints = computed(() => currentUser.value?.user_metadata?.points || 0)
 
-  actions: {
-    // 登录
-    async login({ username, password, remember }) {
-      // 从 localStorage 获取用户数据
-      const users = JSON.parse(localStorage.getItem('users') || '[]')
-      const user = users.find(u => u.username === username)
-
-      if (!user) {
-        throw new Error('用户名不存在')
-      }
-
-      if (user.password !== password) {
-        throw new Error('密码错误')
-      }
-
-      // 设置用户信息
-      this.user = {
-        username: user.username,
-        type: user.type,
-      }
-      this.userType = user.type
-      this.currentMode = user.type
-
-      // 记住登录
-      if (remember) {
-        localStorage.setItem('currentUser', JSON.stringify(this.user))
-      }
-
-      return this.user
-    },
-
-    // 注册
-    async register({ username, password, userType, parentUsername }) {
-      console.log('Registering user with data:', { username, userType, parentUsername })
-
-      if (!username || !password || !userType) {
-        throw new Error('请填写所有必填字段')
-      }
-
-      // 从 localStorage 获取用户数据
-      let users = []
-      try {
-        const usersStr = localStorage.getItem('users')
-        console.log('Current users in localStorage:', usersStr)
-        users = usersStr ? JSON.parse(usersStr) : []
-      } catch (error) {
-        console.error('Failed to parse users from localStorage:', error)
-        localStorage.setItem('users', '[]')
-        users = []
-      }
-
-      // 检查用户名是否已存在
-      if (users.some(u => u.username === username)) {
-        throw new Error('用户名已存在')
-      }
-
-      // 如果是儿童账号，验证家长账号
-      if (userType === 'child') {
-        if (!parentUsername) {
-          throw new Error('请输入家长用户名')
-        }
-        const parentUser = users.find(u => u.username === parentUsername && u.type === 'parent')
+  // 注册
+  async function register({ email, password, role, parentEmail }) {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      // 如果是子账户，验证父账户是否存在
+      if (role === 'child' && parentEmail) {
+        const { data: parentUser } = await auth.getUserByEmail(parentEmail)
         if (!parentUser) {
-          throw new Error('找不到对应的家长账号')
+          throw new Error('父账户不存在')
         }
       }
 
-      // 创建新用户
-      const newUser = {
-        username,
-        password,
-        type: userType,
-        parentUsername: userType === 'child' ? parentUsername : null,
+      const { user } = await auth.signUp(email, password, {
+        role,
         points: 0,
-        createdAt: new Date().toISOString()
-      }
+        parentEmail
+      })
 
-      console.log('Creating new user:', newUser)
+      currentUser.value = user
+      notify({
+        type: 'success',
+        message: '注册成功！'
+      })
+      
+      return user
+    } catch (e) {
+      error.value = e.message
+      notify({
+        type: 'error',
+        message: e.message
+      })
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
 
-      // 保存用户数据
-      try {
-        users.push(newUser)
-        const usersStr = JSON.stringify(users)
-        console.log('Saving users to localStorage:', usersStr)
-        localStorage.setItem('users', usersStr)
-        
-        // 验证保存是否成功
-        const savedUsers = JSON.parse(localStorage.getItem('users'))
-        console.log('Verified saved users:', savedUsers)
-        if (!savedUsers.some(u => u.username === username)) {
-          throw new Error('用户数据保存失败')
+  // 登录
+  async function login(email, password) {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      const { user } = await auth.signIn(email, password)
+      currentUser.value = user
+      
+      notify({
+        type: 'success',
+        message: '登录成功！'
+      })
+      
+      return user
+    } catch (e) {
+      error.value = e.message
+      notify({
+        type: 'error',
+        message: e.message
+      })
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // 登出
+  async function logout() {
+    try {
+      await auth.signOut()
+      currentUser.value = null
+      notify({
+        type: 'success',
+        message: '已安全退出'
+      })
+    } catch (e) {
+      error.value = e.message
+      notify({
+        type: 'error',
+        message: e.message
+      })
+    }
+  }
+
+  // 处理认证状态变化
+  function handleAuthChange(event, session) {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser.value = session.user
+    } else if (event === 'SIGNED_OUT') {
+      currentUser.value = null
+    }
+  }
+
+  // 设置会话
+  async function setSession(session) {
+    if (session) {
+      currentUser.value = session.user
+    } else {
+      currentUser.value = null
+    }
+  }
+
+  // 任务相关
+  async function createTask(task) {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      const newTask = await tasks.create({
+        ...task,
+        user_id: currentUser.value.id
+      })
+      
+      notify({
+        type: 'success',
+        message: '任务创建成功！'
+      })
+      
+      return newTask
+    } catch (e) {
+      error.value = e.message
+      notify({
+        type: 'error',
+        message: e.message
+      })
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function updateTask(taskId, updates) {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      const updatedTask = await tasks.update(taskId, updates)
+      
+      notify({
+        type: 'success',
+        message: '任务更新成功！'
+      })
+      
+      return updatedTask
+    } catch (e) {
+      error.value = e.message
+      notify({
+        type: 'error',
+        message: e.message
+      })
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function deleteTask(taskId) {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      await tasks.delete(taskId)
+      
+      notify({
+        type: 'success',
+        message: '任务已删除'
+      })
+    } catch (e) {
+      error.value = e.message
+      notify({
+        type: 'error',
+        message: e.message
+      })
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function getTasks(filters = {}) {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      return await tasks.list(currentUser.value.id, filters)
+    } catch (e) {
+      error.value = e.message
+      notify({
+        type: 'error',
+        message: e.message
+      })
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // 积分相关
+  async function updatePoints(userId, newPoints) {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      const updatedPoints = await points.update(userId, newPoints)
+      
+      // 更新当前用户的积分
+      if (currentUser.value.id === userId) {
+        currentUser.value = {
+          ...currentUser.value,
+          user_metadata: {
+            ...currentUser.value.user_metadata,
+            points: updatedPoints
+          }
         }
-      } catch (error) {
-        console.error('Failed to save user to localStorage:', error)
-        throw new Error('注册失败，请重试')
       }
+      
+      notify({
+        type: 'success',
+        message: '积分更新成功！'
+      })
+      
+      return updatedPoints
+    } catch (e) {
+      error.value = e.message
+      notify({
+        type: 'error',
+        message: e.message
+      })
+      throw e
+    } finally {
+      isLoading.value = false
+    }
+  }
 
-      return newUser
-    },
+  // 通知相关
+  function notify({ type = 'info', message, duration = 3000 }) {
+    const id = Date.now()
+    notifications.value.push({ id, type, message })
+    
+    setTimeout(() => {
+      dismissNotification(id)
+    }, duration)
+  }
 
-    // 登出
-    logout() {
-      this.user = null
-      this.userType = null
-      this.currentMode = null
-      localStorage.removeItem('currentUser')
-    },
+  // 关闭通知
+  function dismissNotification(id) {
+    notifications.value = notifications.value.filter(n => n.id !== id)
+  }
 
-    // 切换模式（家长/儿童）
-    setCurrentMode(mode) {
-      if (this.userType === 'parent') {
-        this.currentMode = mode
-      }
-    },
-
-    // 显示通知
-    notify(message, type = 'info') {
-      this.notification = {
-        id: Date.now(),
-        message,
-        type,
-      }
-    },
-
-    // 检查登录状态
-    checkAuth() {
-      const savedUser = localStorage.getItem('currentUser')
-      if (savedUser) {
-        const user = JSON.parse(savedUser)
-        this.user = user
-        this.userType = user.type
-        this.currentMode = user.type
-        return true
-      }
-      return false
-    },
+  return {
+    // 状态
+    currentUser,
+    notifications,
+    isLoading,
+    error,
+    
+    // 计算属性
+    isAuthenticated,
+    userRole,
+    userPoints,
+    
+    // 方法
+    register,
+    login,
+    logout,
+    handleAuthChange,
+    setSession,
+    createTask,
+    updateTask,
+    deleteTask,
+    getTasks,
+    updatePoints,
+    notify,
+    dismissNotification
   }
 }) 
