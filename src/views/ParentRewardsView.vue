@@ -354,10 +354,32 @@ onMounted(() => {
 
 <style scoped>
 .btn-primary {
-  @apply bg-gradient-to-r from-primary to-primary-dark text-white rounded-lg shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/50;
+  @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium 
+  bg-primary text-primary-foreground hover:bg-primary/90 
+  focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring;
 }
 
-.btn-outline-danger {
-  @apply border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition focus:outline-none focus:ring-2 focus:ring-red-500/50;
+.btn-outline {
+  @apply inline-flex items-center justify-center rounded-lg border border-input px-4 py-2 text-sm font-medium 
+  bg-background hover:bg-accent hover:text-accent-foreground
+  focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.125);
+}
+
+.clay {
+  background: var(--clay-background);
+  border-radius: 12px;
+  box-shadow: 8px 8px 16px var(--clay-shadow-dark),
+             -8px -8px 16px var(--clay-shadow-light);
+}
+
+.clay-pressed {
+  box-shadow: inset 8px 8px 16px var(--clay-shadow-dark),
+              inset -8px -8px 16px var(--clay-shadow-light);
 }
 </style> 
