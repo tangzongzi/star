@@ -7,27 +7,48 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // 用户相关操作
 export const auth = {
-  // 注册
-  async signUp(email, password, metadata) {
+  // 以用户名注册
+  async signUp(username, password, metadata) {
+    // 创建一个模拟邮箱（为兼容Supabase的邮箱要求）
+    const email = `${username}@example.com`
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: metadata
+        data: {
+          ...metadata,
+          username // 将真实用户名存储在用户元数据中
+        }
       }
     })
     if (error) throw error
     return data
   },
 
-  // 登录
-  async signIn(email, password) {
+  // 以用户名登录
+  async signIn(username, password) {
+    // 创建一个模拟邮箱（为兼容Supabase的邮箱要求）
+    const email = `${username}@example.com`
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     })
     if (error) throw error
     return data
+  },
+
+  // 通过用户名查找用户
+  async getUserByUsername(username) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('username', username)
+      .single()
+      
+    if (error && error.code !== 'PGRST116') throw error
+    return { data }
   },
 
   // 登出

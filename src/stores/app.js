@@ -12,25 +12,26 @@ export const useAppStore = defineStore('app', () => {
   const isAuthenticated = computed(() => !!currentUser.value)
   const userRole = computed(() => currentUser.value?.user_metadata?.role || '')
   const userPoints = computed(() => currentUser.value?.user_metadata?.points || 0)
+  const username = computed(() => currentUser.value?.user_metadata?.username || '')
 
   // 注册
-  async function register({ email, password, role, parentEmail }) {
+  async function register({ username, password, role, parentUsername }) {
     try {
       isLoading.value = true
       error.value = null
       
       // 如果是子账户，验证父账户是否存在
-      if (role === 'child' && parentEmail) {
-        const { data: parentUser } = await auth.getUserByEmail(parentEmail)
+      if (role === 'child' && parentUsername) {
+        const { data: parentUser } = await auth.getUserByUsername(parentUsername)
         if (!parentUser) {
           throw new Error('父账户不存在')
         }
       }
 
-      const { user } = await auth.signUp(email, password, {
+      const { user } = await auth.signUp(username, password, {
         role,
         points: 0,
-        parentEmail
+        parentUsername
       })
 
       currentUser.value = user
@@ -53,12 +54,12 @@ export const useAppStore = defineStore('app', () => {
   }
 
   // 登录
-  async function login(email, password) {
+  async function login(username, password) {
     try {
       isLoading.value = true
       error.value = null
       
-      const { user } = await auth.signIn(email, password)
+      const { user } = await auth.signIn(username, password)
       currentUser.value = user
       
       notify({
@@ -273,6 +274,7 @@ export const useAppStore = defineStore('app', () => {
     isAuthenticated,
     userRole,
     userPoints,
+    username,
     
     // 方法
     register,

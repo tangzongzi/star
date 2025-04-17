@@ -31,6 +31,9 @@
       </div>
     </div>
     
+    <!-- 导航栏 -->
+    <NavBar v-if="appStore.isAuthenticated && !isAuthPage" />
+    
     <router-view></router-view>
   </div>
 </template>
@@ -41,6 +44,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from './stores/app'
 import { supabase } from './lib/supabase'
 import NotificationToast from './components/NotificationToast.vue'
+import NavBar from './components/NavBar.vue'
 
 const route = useRoute()
 const router = useRouter()
