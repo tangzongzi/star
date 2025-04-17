@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.10.6",
+    "netlify-plugin-cache-nextjs": "^1.6.1"
+  }
+}
