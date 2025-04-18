@@ -80,7 +80,7 @@ export const auth = {
         throw new Error('用户名只能包含字母、数字和下划线');
       }
       
-      // 始终使用gmail.com域名 - 这是广泛接受的有效域名
+      // 使用用户名创建一个有效的邮箱格式
       const email = `${username}@gmail.com`;
       
       console.log('调用supabase.auth.signUp:', { email, hasPassword: !!password, metadata })
@@ -118,70 +118,14 @@ export const auth = {
     try {
       console.log('开始登录用户:', { username })
       
-      // 一律添加gmail.com域名，保持与注册一致
+      // 使用用户名创建一个有效的邮箱格式
       const email = `${username}@gmail.com`;
       
-      // 先尝试普通登录
-      let { data, error } = await supabase.auth.signInWithPassword({
+      // 简单登录调用
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
-      
-      // 如果是邮箱未验证的错误
-      if (error && error.message && (
-          error.message.includes('Email not confirmed') || 
-          error.message.includes('Invalid login credentials')
-        )) {
-        console.log('尝试绕过邮箱验证...');
-        
-        // 尝试使用admin API直接获取用户（这需要在Supabase后台做相应设置）
-        try {
-          // 检查凭据是否正确
-          const { data: userByName } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('username', username)
-            .single();
-            
-          if (userByName) {
-            console.log('找到用户档案，尝试强制登录:', userByName);
-            
-            // 如果找到用户，则创建一个自定义会话
-            const customSessionData = {
-              user: {
-                id: userByName.id,
-                email: email,
-                user_metadata: {
-                  username: username,
-                  role: userByName.role,
-                  points: userByName.points,
-                  parentUsername: userByName.parent_username
-                }
-              },
-              session: {
-                access_token: 'custom_session_token',
-                expires_at: new Date().getTime() + 3600 * 1000, // 1小时有效期
-                user: {
-                  id: userByName.id,
-                  email: email,
-                  user_metadata: {
-                    username: username,
-                    role: userByName.role,
-                    points: userByName.points,
-                    parentUsername: userByName.parent_username
-                  }
-                }
-              }
-            };
-            
-            // 返回自定义会话数据
-            return customSessionData;
-          }
-        } catch (innerErr) {
-          console.error('强制登录尝试失败:', innerErr);
-          // 继续抛出原始错误
-        }
-      }
       
       if (error) {
         console.error('登录错误:', error)

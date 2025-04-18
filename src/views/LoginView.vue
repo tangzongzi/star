@@ -31,19 +31,7 @@
         <form @submit.prevent="handleSubmit" class="space-y-5">
           <!-- 登录错误提示 -->
           <div v-if="error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-            <div v-if="error.includes('Email not confirmed')">
-              <p><strong>邮箱未确认</strong></p>
-              <p class="mt-1">您的账号尚未验证邮箱，但仍可尝试登录。</p>
-              <button 
-                @click="ignoreEmailConfirmation" 
-                class="mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-700 py-1 px-2 rounded"
-              >
-                继续登录
-              </button>
-            </div>
-            <div v-else>
-              {{ error }}
-            </div>
+            {{ error }}
           </div>
           
           <!-- 用户名 -->
@@ -250,40 +238,6 @@ watch(() => formData.value.role, (newVal) => {
   }
 })
 
-// 忽略邮箱确认，强制登录
-async function ignoreEmailConfirmation() {
-  error.value = ''
-  loading.value = true
-  
-  try {
-    console.log('尝试强制登录')
-    
-    // 调用强制登录逻辑
-    await forceLoginUser()
-    
-    // 登录成功后的处理与正常登录相同
-    const redirectPath = appStore.userRole === 'parent' ? '/parent' : '/child'
-    router.push(redirectPath)
-  } catch (e) {
-    console.error('强制登录失败:', e)
-    error.value = e.message
-  } finally {
-    loading.value = false
-  }
-}
-
-// 强制登录实现
-async function forceLoginUser() {
-  try {
-    // 使用现有的登录方法，我们已更新它以处理未验证邮箱情况
-    await appStore.login(formData.value.username.trim(), formData.value.password)
-    return true
-  } catch (err) {
-    console.error('强制登录错误:', err)
-    throw err
-  }
-}
-
 // 处理表单提交
 async function handleSubmit() {
   error.value = ''
@@ -316,7 +270,7 @@ async function handleSubmit() {
       }
       
       try {
-        // 注册新用户 - 使用用户名而不是邮箱
+        // 注册新用户
         console.log('调用appStore.register前')
         const user = await appStore.register({
           username: formData.value.username.trim(),
@@ -330,7 +284,7 @@ async function handleSubmit() {
         isLogin.value = true
         appStore.notify({
           type: 'success',
-          message: '注册成功，请登录 (无需验证邮箱)'
+          message: '注册成功，请登录'
         })
       } catch (regError) {
         console.error('注册过程出错:', regError)
@@ -339,24 +293,12 @@ async function handleSubmit() {
     } else {
       console.log('开始登录流程', { username: formData.value.username })
       
-      // 登录 - 使用用户名而不是邮箱
-      try {
-        await appStore.login(formData.value.username.trim(), formData.value.password)
-        
-        // 登录成功后重定向
-        const redirectPath = appStore.userRole === 'parent' ? '/parent' : '/child'
-        router.push(redirectPath)
-      } catch (loginError) {
-        // 处理特定的邮箱未验证错误
-        if (loginError.message && loginError.message.includes('Email not confirmed')) {
-          error.value = loginError.message
-          // 不再抛出异常，而是显示特殊提示，让用户决定是否继续
-          return
-        }
-        
-        // 其他登录错误，继续抛出
-        throw loginError
-      }
+      // 直接登录
+      await appStore.login(formData.value.username.trim(), formData.value.password)
+      
+      // 登录成功后重定向
+      const redirectPath = appStore.userRole === 'parent' ? '/parent' : '/child'
+      router.push(redirectPath)
     }
   } catch (e) {
     console.error('handleSubmit错误:', e)

@@ -100,6 +100,9 @@ export const useAppStore = defineStore('app', () => {
       isLoading.value = true
       error.value = null
       
+      console.log('开始登录用户:', { username })
+      
+      // 简单登录，无需处理邮箱验证
       const { user } = await auth.signIn(username, password)
       currentUser.value = user
       
@@ -110,6 +113,7 @@ export const useAppStore = defineStore('app', () => {
       
       return user
     } catch (e) {
+      console.error('登录失败:', e)
       error.value = e.message
       notify({
         type: 'error',
