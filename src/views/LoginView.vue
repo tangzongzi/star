@@ -44,9 +44,12 @@
               v-model.trim="formData.username"
               class="form-input transition-all duration-200 shadow-sm block w-full rounded-xl border border-gray-300 focus:border-violet-500 focus:ring focus:ring-violet-500/20 py-3 px-4"
               type="text"
-              placeholder="请输入用户名"
+              placeholder="仅使用字母、数字和下划线"
+              pattern="[a-zA-Z0-9_]+"
+              title="用户名只能包含字母、数字和下划线"
               required
             />
+            <p class="mt-1 text-xs text-gray-500">请使用字母、数字或下划线，不要输入邮箱格式</p>
           </div>
           
           <!-- 密码 -->
@@ -176,6 +179,24 @@
             {{ isLogin ? '没有账号? 注册' : '已有账号? 登录' }}
           </button>
         </div>
+        
+        <!-- 数据库连接测试 -->
+        <div class="mt-8 border-t pt-4" v-if="showTestTools">
+          <div class="text-center mb-4">
+            <h3 class="text-sm font-medium text-gray-700">数据库连接测试</h3>
+          </div>
+          <SupabaseTest />
+        </div>
+        
+        <!-- 测试工具切换 -->
+        <div class="mt-4 text-center">
+          <button 
+            @click="showTestTools = !showTestTools" 
+            class="text-xs text-gray-500 hover:text-gray-700"
+          >
+            {{ showTestTools ? '隐藏' : '显示' }}数据库测试工具
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -185,6 +206,7 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/app'
+import SupabaseTest from '../components/SupabaseTest.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -192,6 +214,7 @@ const appStore = useAppStore()
 const isLogin = ref(true)
 const loading = ref(false)
 const error = ref('')
+const showTestTools = ref(false)
 
 const formData = ref({
   username: '',
@@ -228,6 +251,12 @@ async function handleSubmit() {
     
     // 注册模式
     if (!isLogin.value) {
+      console.log('开始注册流程', { 
+        username: formData.value.username,
+        role: formData.value.role,
+        hasParent: !!formData.value.parentUsername
+      })
+      
       if (formData.value.password.length < 6) {
         throw new Error('密码长度不能少于6位')
       }
@@ -240,25 +269,39 @@ async function handleSubmit() {
         throw new Error('请输入家长用户名')
       }
       
-      // 注册新用户 - 使用用户名而不是邮箱
-      await appStore.register({
-        username: formData.value.username,
-        password: formData.value.password,
-        role: formData.value.role,
-        parentUsername: formData.value.parentUsername
-      })
-      
-      // 注册成功后切换到登录模式
-      isLogin.value = true
+      try {
+        // 注册新用户 - 使用用户名而不是邮箱
+        console.log('调用appStore.register前')
+        const user = await appStore.register({
+          username: formData.value.username.trim(),
+          password: formData.value.password,
+          role: formData.value.role,
+          parentUsername: formData.value.parentUsername?.trim()
+        })
+        console.log('注册成功，用户数据:', user)
+        
+        // 注册成功后切换到登录模式
+        isLogin.value = true
+        appStore.notify({
+          type: 'success',
+          message: '注册成功，请登录'
+        })
+      } catch (regError) {
+        console.error('注册过程出错:', regError)
+        throw new Error(`注册失败: ${regError.message}`)
+      }
     } else {
+      console.log('开始登录流程', { username: formData.value.username })
+      
       // 登录 - 使用用户名而不是邮箱
-      await appStore.login(formData.value.username, formData.value.password)
+      await appStore.login(formData.value.username.trim(), formData.value.password)
       
       // 登录成功后重定向
       const redirectPath = appStore.userRole === 'parent' ? '/parent' : '/child'
       router.push(redirectPath)
     }
   } catch (e) {
+    console.error('handleSubmit错误:', e)
     error.value = e.message
   } finally {
     loading.value = false

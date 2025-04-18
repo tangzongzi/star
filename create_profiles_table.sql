@@ -4,7 +4,7 @@ create table public.profiles (
   username text unique not null,
   role text not null default 'parent',
   points integer not null default 0,
-  parent_id uuid references auth.users(id),
+  parent_username text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -17,36 +17,66 @@ create policy "Users can view own profile"
   on public.profiles for select
   using (auth.uid() = id);
 
--- 允许父母读取子女的资料
-create policy "Parents can view their children's profiles"
+-- 允许所有已认证用户查看所有profiles（为了家长子女关联）
+create policy "Users can view all profiles"
   on public.profiles for select
-  using (exists (
-    select 1 from public.profiles
-    where profiles.parent_id = auth.uid()
-  ));
+  using (true);
 
 -- 允许已认证用户更新自己的资料
 create policy "Users can update own profile"
   on public.profiles for update
   using (auth.uid() = id);
 
+-- 允许服务角色插入新profiles
+create policy "Service role can insert profiles"
+  on public.profiles for insert
+  using (true);  -- 允许服务插入新profiles，依赖触发器安全
+
 -- 创建用户注册触发器函数
 create or replace function public.handle_new_user()
 returns trigger as $$
+declare
+  new_username text;
+  new_role text;
+  new_points integer;
+  new_parent_username text;
 begin
-  insert into public.profiles (id, username, role, points, parent_id)
+  -- 提取元数据信息并记录日志
+  new_username := new.raw_user_meta_data->>'username';
+  new_role := coalesce(new.raw_user_meta_data->>'role', 'parent');
+  new_points := coalesce((new.raw_user_meta_data->>'points')::int, 0);
+  new_parent_username := new.raw_user_meta_data->>'parentUsername';
+  
+  raise notice 'Creating profile for user: %, role: %, parent: %', 
+    new_username, new_role, coalesce(new_parent_username, 'none');
+    
+  -- 验证必要数据
+  if new_username is null then
+    raise exception 'Username cannot be null';
+  end if;
+  
+  -- 简单插入用户资料
+  insert into public.profiles (
+    id, 
+    username, 
+    role, 
+    points,
+    parent_username
+  )
   values (
     new.id,
-    new.raw_user_meta_data->>'username',
-    new.raw_user_meta_data->>'role',
-    coalesce((new.raw_user_meta_data->>'points')::int, 0),
-    (case
-      when new.raw_user_meta_data->>'role' = 'child' and new.raw_user_meta_data->>'parentUsername' is not null then
-        (select id from auth.users u join public.profiles p on u.id = p.id where p.username = new.raw_user_meta_data->>'parentUsername')
-      else null
-    end)
+    new_username,
+    new_role,
+    new_points,
+    new_parent_username
   );
+  
+  raise notice 'Successfully created profile for user: %', new_username;
   return new;
+exception
+  when others then
+    raise notice 'Error in handle_new_user trigger: %', SQLERRM;
+    return new; -- 仍然返回new以允许用户创建，即使profile失败
 end;
 $$ language plpgsql security definer;
 

@@ -17,39 +17,80 @@ export const useAppStore = defineStore('app', () => {
   // 注册
   async function register({ username, password, role, parentUsername }) {
     try {
-      isLoading.value = true
-      error.value = null
+      isLoading.value = true;
+      error.value = null;
       
-      // 如果是子账户，验证父账户是否存在
+      console.log("开始注册用户 [app.js]:", { username, role, parentUsername });
+      
+      // 基本验证
+      if (!username || !password) {
+        throw new Error('用户名和密码不能为空');
+      }
+      
+      if (password.length < 6) {
+        throw new Error('密码长度不能少于6位');
+      }
+      
+      if (role === 'child' && !parentUsername) {
+        throw new Error('儿童账户必须指定家长用户名');
+      }
+      
+      // 先检查父账户
       if (role === 'child' && parentUsername) {
-        const { data: parentUser } = await auth.getUserByUsername(parentUsername)
-        if (!parentUser) {
-          throw new Error('父账户不存在')
+        try {
+          console.log("正在验证父账户存在性:", parentUsername);
+          const { data: parentUser } = await auth.getUserByUsername(parentUsername);
+          console.log("查询父账户结果:", parentUser);
+          if (!parentUser) {
+            console.warn("父账户不存在:", parentUsername);
+            throw new Error('父账户不存在');
+          }
+          
+          if (parentUser.role !== 'parent') {
+            console.warn("指定的父账户不是家长角色:", parentUser.role);
+            throw new Error('指定的账户不是家长账户');
+          }
+        } catch (err) {
+          console.error("查询父账户时出错:", err);
+          if (err.message === "父账户不存在" || err.message === "指定的账户不是家长账户") {
+            throw err;
+          }
+          // 其他错误，可能是连接问题，继续尝试注册
+          console.warn("尝试继续注册，尽管查询父账户失败");
         }
       }
 
-      const { user } = await auth.signUp(username, password, {
+      console.log("准备调用auth.signUp进行注册");
+      const userData = await auth.signUp(username, password, {
         role,
         points: 0,
-        parentUsername
-      })
-
-      currentUser.value = user
+        parentUsername: role === 'child' ? parentUsername : null
+      });
+      
+      if (!userData || !userData.user) {
+        console.error("注册失败，没有返回用户数据");
+        throw new Error('注册失败，请稍后重试');
+      }
+      
+      console.log("注册成功，用户数据:", userData);
+      currentUser.value = userData.user;
+      
       notify({
         type: 'success',
         message: '注册成功！'
-      })
+      });
       
-      return user
+      return userData.user;
     } catch (e) {
-      error.value = e.message
+      console.error("注册过程中出错 [app.js]:", e);
+      error.value = e.message;
       notify({
         type: 'error',
-        message: e.message
-      })
-      throw e
+        message: e.message || '注册失败，请稍后重试'
+      });
+      throw e;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 

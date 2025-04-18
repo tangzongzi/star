@@ -1,54 +1,166 @@
 import { createClient } from '@supabase/supabase-js'
 
+// 获取环境变量
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// 检查环境变量配置
+console.log('Supabase配置:', { 
+  urlConfigured: !!supabaseUrl, 
+  keyConfigured: !!supabaseAnonKey,
+  urlLength: supabaseUrl?.length || 0,
+  keyLength: supabaseAnonKey?.length || 0
+})
+
+// 如果URL和密钥未设置，显示警告
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase 环境变量未配置！', {
+    VITE_SUPABASE_URL: supabaseUrl ? '已设置' : '未设置',
+    VITE_SUPABASE_ANON_KEY: supabaseAnonKey ? '已设置' : '未设置'
+  })
+}
+
+// 创建Supabase客户端
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true
+  }
+})
+
+// 检查Supabase客户端是否可用
+export async function checkSupabaseConnection() {
+  try {
+    console.log('正在检查Supabase连接...')
+    const { data, error } = await supabase.from('profiles').select('count', { count: 'exact' }).limit(1)
+    
+    if (error) {
+      console.error('Supabase连接测试失败:', error)
+      return {
+        success: false,
+        error: error.message,
+        details: error
+      }
+    }
+    
+    console.log('Supabase连接测试成功:', data)
+    return {
+      success: true,
+      data
+    }
+  } catch (err) {
+    console.error('Supabase连接检查异常:', err)
+    return {
+      success: false,
+      error: err.message,
+      details: err
+    }
+  }
+}
+
+// 初始化检查
+checkSupabaseConnection().then(result => {
+  if (result.success) {
+    console.log('✅ Supabase连接正常')
+  } else {
+    console.error('❌ Supabase连接异常:', result.error)
+  }
+})
 
 // 用户相关操作
 export const auth = {
   // 以用户名注册
   async signUp(username, password, metadata) {
-    // 创建一个模拟邮箱（为兼容Supabase的邮箱要求）
-    const email = `${username}@example.com`
-    
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          ...metadata,
-          username // 将真实用户名存储在用户元数据中
-        }
+    try {
+      console.log('开始注册用户:', { username, metadata })
+      
+      // 用户名验证 - 只允许字母、数字和下划线
+      const usernameRegex = /^[a-zA-Z0-9_]+$/;
+      if (!usernameRegex.test(username)) {
+        throw new Error('用户名只能包含字母、数字和下划线');
       }
-    })
-    if (error) throw error
-    return data
+      
+      // 始终使用gmail.com域名 - 这是广泛接受的有效域名
+      const email = `${username}@gmail.com`;
+      
+      console.log('调用supabase.auth.signUp:', { email, hasPassword: !!password, metadata })
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            ...metadata,
+            username // 将真实用户名存储在用户元数据中
+          }
+        }
+      })
+      
+      if (error) {
+        console.error('Supabase注册错误:', error)
+        throw error
+      }
+      
+      console.log('Supabase注册成功:', { 
+        user: data.user?.id,
+        session: !!data.session,
+        userMetadata: data.user?.user_metadata
+      })
+      
+      return data
+    } catch (err) {
+      console.error('auth.signUp方法捕获错误:', err)
+      throw err
+    }
   },
 
   // 以用户名登录
   async signIn(username, password) {
-    // 创建一个模拟邮箱（为兼容Supabase的邮箱要求）
-    const email = `${username}@example.com`
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-    if (error) throw error
-    return data
+    try {
+      console.log('开始登录用户:', { username })
+      
+      // 一律添加gmail.com域名，保持与注册一致
+      const email = `${username}@gmail.com`;
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      
+      if (error) {
+        console.error('登录错误:', error)
+        throw error
+      }
+      
+      console.log('登录成功:', { user: data.user?.id })
+      return data
+    } catch (err) {
+      console.error('auth.signIn方法捕获错误:', err)
+      throw err
+    }
   },
 
   // 通过用户名查找用户
   async getUserByUsername(username) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('username', username)
-      .single()
+    try {
+      console.log('查询用户:', { username })
       
-    if (error && error.code !== 'PGRST116') throw error
-    return { data }
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('username', username)
+        .single()
+        
+      if (error && error.code !== 'PGRST116') {
+        console.error('查询用户错误:', error)
+        throw error
+      }
+      
+      console.log('查询用户结果:', { found: !!data, data })
+      return { data }
+    } catch (err) {
+      console.error('getUserByUsername方法捕获错误:', err)
+      throw err
+    }
   },
 
   // 登出
