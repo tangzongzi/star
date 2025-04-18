@@ -10,19 +10,22 @@
             </div>
             <span class="text-lg font-semibold text-gray-900">星星任务</span>
           </router-link>
-          <div class="hidden md:flex items-center space-x-1">
-            <div class="flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100/50">
-              <svg class="w-5 h-5 text-amber-500 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
-              </svg>
-              <span class="text-amber-700 font-medium">{{ points }} 积分</span>
-            </div>
-          </div>
         </div>
         <nav class="flex items-center space-x-4">
           <router-link 
+            to="/parent" 
+            class="flex items-center px-4 py-2 rounded-lg text-sm font-medium"
+            :class="$route.path === '/parent' ? 'text-indigo-600 bg-indigo-50' : 'text-gray-600 hover:text-indigo-600'"
+          >
+            <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            任务管理
+          </router-link>
+          <router-link 
             to="/parent/rewards" 
-            class="flex items-center px-4 py-2 rounded-lg text-sm font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+            class="flex items-center px-4 py-2 rounded-lg text-sm font-medium"
+            :class="$route.path.includes('/rewards') ? 'text-indigo-600 bg-indigo-50' : 'text-gray-600 hover:text-indigo-600'"
           >
             <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 15.0006L8.46447 18.5361L7.05025 17.1219L12 12.1721L16.9497 17.1219L15.5355 18.5361L12 15.0006Z" fill="currentColor"/>
@@ -30,6 +33,19 @@
             </svg>
             奖励管理
           </router-link>
+          <div class="flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100/50">
+            <svg class="w-5 h-5 text-amber-500 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+            </svg>
+            <span class="text-amber-700 font-medium">{{ points }} 积分</span>
+          </div>
+          <div class="relative group">
+            <button class="flex items-center space-x-2 focus:outline-none">
+              <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium">
+                <span>{{ appStore.username ? appStore.username.charAt(0).toUpperCase() : 'U' }}</span>
+              </div>
+            </button>
+          </div>
         </nav>
       </div>
     </header>
@@ -38,16 +54,26 @@
     <main class="container mx-auto px-4 pt-24 pb-12">
       <!-- 欢迎区域 -->
       <section class="mb-10">
-        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-8 md:p-12">
-          <div class="relative z-10">
-            <h1 class="text-2xl md:text-3xl font-bold text-white mb-4">
-              欢迎回来，家长 👋
-            </h1>
-            <p class="text-indigo-100 text-base md:text-lg max-w-2xl">
-              通过给孩子设置任务和奖励，培养孩子的责任感和自律能力。完成任务可以获得星星奖励，用于兑换奖励。
-            </p>
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-8 md:p-10">
+          <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
+            <div class="md:max-w-xl">
+              <h1 class="text-2xl md:text-3xl font-bold text-white mb-2">
+                欢迎回来，家长 👋
+              </h1>
+              <p class="text-indigo-100 text-sm md:text-base max-w-xl">
+                通过给孩子设置任务和奖励，培养孩子的责任感和自律能力。
+              </p>
+            </div>
+            <button 
+              @click="showAddTaskModal = true"
+              class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 rounded-lg bg-white text-indigo-600 font-medium text-sm hover:bg-indigo-50 transition-all duration-200 shadow-sm"
+            >
+              <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4V20M20 12L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              添加新任务
+            </button>
           </div>
-          <!-- 装饰性背景元素 -->
           <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/10 to-transparent rounded-full transform translate-x-1/3 -translate-y-1/3"></div>
           <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-white/10 to-transparent rounded-full transform -translate-x-1/3 translate-y-1/3"></div>
         </div>
@@ -101,15 +127,17 @@
               <h2 class="text-xl font-bold text-gray-900">全部任务</h2>
               <p class="text-sm text-gray-500 mt-1">管理和跟踪所有任务的进度</p>
             </div>
-            <button 
-              @click="showAddTaskModal = true"
-              class="inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium text-sm hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4V20M20 12L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              添加任务
-            </button>
+            <div class="flex items-center space-x-2">
+              <button 
+                @click="showAddTaskModal = true"
+                class="inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium text-sm hover:from-indigo-700 hover:to-purple-700 transition-all"
+              >
+                <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4V20M20 12L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                添加任务
+              </button>
+            </div>
           </div>
         </div>
 
